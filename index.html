@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ramadan Dashboard</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Tajawal:wght@300;400;500;700;800&family=Space+Grotesk:wght@500;700&display=swap');
+        
+        html[lang="en"] body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            letter-spacing: -0.01em;
+        }
+        html[lang="ar"] body { 
+            font-family: 'Tajawal', sans-serif; 
+            letter-spacing: 0; 
+        }
+
+        body {
+            background-color: #0f172a; /* Slate 900 base */
+            /* Subtle Islamic geometric pattern background */
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2310b981' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            color: #f8fafc;
+        }
+
+        /* Glassmorphism Card Style */
+        .glass-card {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .glass-card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(16, 185, 129, 0.15);
+        }
+
+        /* Brand Accents */
+        .gold-accent { color: #fbbf24; }
+        .emerald-accent { color: #10b981; }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(30, 41, 59, 0.5); 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(16, 185, 129, 0.4); 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(16, 185, 129, 0.8); 
+        }
+
+        /* Circular Progress Indicator */
+        .circular-progress {
+            position: relative;
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            background: conic-gradient(#10b981 0deg, #1e293b 0deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.1);
+            transition: background 0.5s ease-out;
+        }
+
+        .circular-progress::before {
+            content: "";
+            position: absolute;
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            background-color: #0f172a;
+        }
+
+        .progress-value {
+            position: relative;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #f8fafc;
+        }
+        
+        /* Task Animation */
+        .task-item {
+            transition: all 0.3s ease;
+        }
+        .task-item:hover {
+            transform: translateX(4px);
+            background: rgba(16, 185, 129, 0.1);
+        }
+        html[lang="ar"] .task-item:hover {
+            transform: translateX(-4px);
+        }
+        
+        .task-completed {
+            text-decoration: line-through;
+            opacity: 0.4;
+        }
+
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(10px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+
+        /* Language Transition Animation */
+        .lang-transition {
+            animation: langSwap 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        @keyframes langSwap {
+            0% { opacity: 0; filter: blur(5px); transform: scale(0.98); }
+            100% { opacity: 1; filter: blur(0); transform: scale(1); }
+        }
+
+        /* Dedicated Number Font */
+        .number-font {
+            font-family: 'Space Grotesk', monospace, sans-serif !important;
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col md:flex-row overflow-hidden">
+
+    <!-- Mobile Header -->
+    <div class="md:hidden flex items-center justify-between p-4 glass-card shadow-lg z-30 flex-shrink-0">
+        <h1 class="text-xl font-bold gold-accent flex items-center">
+            <i class="fa-solid fa-moon me-2"></i> <span data-i18n="title">Ramadan</span>
+        </h1>
+        <button onclick="toggleLanguage()" class="p-2 rounded-lg bg-slate-800 text-emerald-400 border border-slate-700 shadow-inner">
+            <i class="fa-solid fa-language"></i> <span id="lang-switch-text-mobile" class="text-sm font-bold ms-1">AR</span>
+        </button>
+    </div>
+
+    <!-- Sidebar Menu -->
+    <aside class="w-full md:w-72 glass-card flex flex-col z-20 md:border-e border-slate-700/50 flex-shrink-0 relative overflow-hidden h-auto md:h-full">
+        <div class="absolute -bottom-10 -start-10 p-4 opacity-5 text-9xl pointer-events-none">
+            <i class="fa-solid fa-star-and-crescent"></i>
+        </div>
+        
+        <div class="hidden md:block p-8 border-b border-slate-700/50 relative z-10 text-center md:text-start">
+            <h1 class="text-2xl lg:text-3xl font-bold gold-accent flex flex-col lg:flex-row items-center justify-center md:justify-start gap-2">
+                <i class="fa-solid fa-moon"></i>
+                <span data-i18n="title" class="tracking-wide">Ramadan</span>
+            </h1>
+            <p class="text-slate-400 text-sm mt-3 font-light tracking-wide lg:ms-8" data-i18n="subtitle">Your daily companion</p>
+        </div>
+        
+        <!-- Navigation -->
+        <nav class="p-3 md:p-6 flex md:flex-col gap-2 md:gap-4 overflow-x-auto md:overflow-y-auto no-scrollbar relative z-10">
+            <button id="nav-section-tracker" onclick="switchTab('section-tracker')" class="nav-item flex items-center justify-center md:justify-start gap-3 p-3 md:p-4 rounded-[1rem] bg-emerald-600 text-white transition-all whitespace-nowrap shadow-[0_8px_16px_rgba(16,185,129,0.3)]">
+                <i class="fa-solid fa-clock text-lg md:text-xl md:w-6 text-center"></i> <span data-i18n="navTracker" class="text-sm md:text-base font-semibold tracking-wide">Iftar Tracker</span>
+            </button>
+            <button id="nav-section-goals" onclick="switchTab('section-goals')" class="nav-item flex items-center justify-center md:justify-start gap-3 p-3 md:p-4 rounded-[1rem] hover:bg-slate-800/80 hover:text-white transition-all text-slate-400 whitespace-nowrap">
+                <i class="fa-solid fa-list-check text-lg md:text-xl md:w-6 text-center"></i> <span data-i18n="navGoals" class="text-sm md:text-base font-medium tracking-wide">Daily Goals</span>
+            </button>
+            <button id="nav-section-khatma" onclick="switchTab('section-khatma')" class="nav-item flex items-center justify-center md:justify-start gap-3 p-3 md:p-4 rounded-[1rem] hover:bg-slate-800/80 hover:text-white transition-all text-slate-400 whitespace-nowrap">
+                <i class="fa-solid fa-book-open text-lg md:text-xl md:w-6 text-center"></i> <span data-i18n="navKhatma" class="text-sm md:text-base font-medium tracking-wide">5atma Coach</span>
+            </button>
+        </nav>
+
+        <!-- Desktop Lang Switcher -->
+        <div class="p-6 mt-auto hidden md:block border-t border-slate-700/50 relative z-10">
+            <button onclick="toggleLanguage()" class="w-full flex items-center justify-center gap-3 p-4 rounded-[1rem] bg-slate-800/80 hover:bg-slate-700 transition-all border border-slate-700/60 shadow-inner group">
+                <i class="fa-solid fa-language text-emerald-400 text-2xl group-hover:scale-110 transition-transform"></i>
+                <span id="lang-switch-text" class="font-bold text-slate-200 tracking-wide text-lg">عربي</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main id="main-container" class="flex-grow p-4 md:p-6 lg:p-10 flex items-center justify-center relative overflow-y-auto">
+        <div class="w-full max-w-2xl">
+            
+            <!-- 1. Maghrib/Iftar Tracker Section -->
+            <section id="section-tracker" class="dashboard-section animate-fade-in w-full">
+                <div class="glass-card glass-card-hover rounded-3xl p-6 md:p-8 flex flex-col relative overflow-hidden group min-h-[400px] justify-center shadow-[0_10px_40px_rgba(0,0,0,0.5)] border-emerald-500/10">
+                    <div class="absolute -top-10 -end-10 p-4 opacity-5 text-8xl group-hover:opacity-10 transition-opacity duration-700 pointer-events-none transform rotate-12">
+                        <i class="fa-solid fa-mosque"></i>
+                    </div>
+                    
+                    <h2 class="text-xl md:text-2xl font-bold mb-6 flex items-center z-10 text-emerald-400 border-b border-emerald-500/20 pb-4">
+                        <i class="fa-solid fa-clock me-3 text-2xl"></i> <span data-i18n="navTracker">Iftar Tracker</span>
+                    </h2>
+                    
+                    <div class="flex-grow flex flex-col justify-center items-center text-center z-10 mt-[-0.5rem]">
+                        <p class="text-slate-400 font-medium mb-2 tracking-[0.2em] uppercase text-xs flex items-center gap-2">
+                           <i class="fa-solid fa-location-dot text-emerald-500/70"></i> <span id="location-text" data-i18n="cityText">Tunis, Tunisia</span>
+                        </p>
+                        
+                        <div class="text-6xl md:text-7xl font-bold gold-accent mb-6 drop-shadow-[0_0_20px_rgba(251,191,36,0.35)] tracking-tight number-font" id="maghrib-time">--:--</div>
+                        
+                        <p class="text-xs md:text-sm uppercase tracking-[0.25em] text-emerald-500 mb-6 font-bold" data-i18n="todaysMaghrib">Today's Maghrib</p>
+                        
+                        <div class="bg-slate-900 bg-opacity-90 p-5 md:p-6 rounded-2xl w-full border border-slate-700/50 relative overflow-hidden shadow-inner w-10/12 mx-auto">
+                            <div class="absolute top-0 start-0 w-full h-1 bg-gradient-to-r from-emerald-500 via-emerald-400 to-amber-400"></div>
+                            <p class="text-slate-400 mb-2 font-medium text-base tracking-wide uppercase" data-i18n="timeUntilIftar">Time until Iftar</p>
+                            <div class="text-4xl md:text-5xl font-bold tracking-tighter text-white drop-shadow-md number-font" id="countdown-timer">--:--:--</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. Ramadan To-Do List Section -->
+            <section id="section-goals" class="dashboard-section animate-fade-in w-full hidden">
+                <div class="glass-card glass-card-hover rounded-3xl p-6 md:p-8 flex flex-col h-[450px] lg:h-[550px] relative overflow-hidden shadow-[0_10px_40px_rgba(0,0,0,0.5)] border-emerald-500/10">
+                    <div class="absolute -bottom-10 -end-10 p-4 opacity-5 text-8xl transition-opacity duration-500 pointer-events-none transform -rotate-12">
+                        <i class="fa-solid fa-list-check"></i>
+                    </div>
+
+                    <h2 class="text-xl md:text-2xl font-bold mb-6 flex items-center text-emerald-400 border-b border-emerald-500/20 pb-4 relative z-10 shrink-0">
+                        <i class="fa-solid fa-list-check me-3 text-2xl"></i> <span data-i18n="navGoals">Daily Goals</span>
+                    </h2>
+                    
+                    <form id="todo-form" class="flex mb-6 drop-shadow-lg relative z-10 shrink-0">
+                        <input type="text" id="todo-input" data-i18n-placeholder="addGoodDeed" placeholder="Add a good deed..." class="flex-grow bg-slate-900 border border-slate-700 border-e-0 rounded-s-xl px-4 py-3 focus:outline-none focus:ring-1 focus:ring-emerald-500 text-white placeholder-slate-500 transition-all text-base font-medium">
+                        <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 transition-colors text-white px-6 py-3 rounded-e-xl border border-emerald-600 font-semibold group flex items-center justify-center">
+                            <i class="fa-solid fa-plus group-hover:rotate-90 transition-transform duration-300 text-xl"></i>
+                        </button>
+                    </form>
+
+                    <ul id="todo-list" class="flex-grow overflow-y-auto space-y-3 pe-2 relative z-10 custom-scrollbar">
+                        <!-- Task items dynamically injected -->
+                    </ul>
+                </div>
+            </section>
+
+            <!-- 3. 5atma Coach Section -->
+            <section id="section-khatma" class="dashboard-section animate-fade-in w-full hidden">
+                <div class="glass-card glass-card-hover rounded-3xl p-6 md:p-8 flex flex-col relative overflow-hidden shadow-[0_10px_40px_rgba(0,0,0,0.5)] border-emerald-500/10 h-[550px] lg:h-[650px]">
+                    <h2 class="text-xl md:text-2xl font-bold mb-4 flex items-center text-emerald-400 border-b border-emerald-500/20 pb-4 relative z-10 shrink-0">
+                        <i class="fa-solid fa-book-open me-3 text-2xl"></i> <span data-i18n="navKhatma">5atma Coach</span>
+                    </h2>
+                    
+                    <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-6 relative z-10 lg:px-4">
+                        <div class="w-full md:w-1/2 flex flex-col justify-center items-center md:items-start text-center md:text-start">
+                            <label class="block text-xs uppercase tracking-widest text-slate-400 mb-2 font-semibold" data-i18n="ramadanDay">Ramadan Day</label>
+                            <div class="relative w-24 border border-slate-700 rounded-xl bg-slate-900 overflow-hidden shadow-inner focus-within:ring-1 focus-within:ring-emerald-500 focus-within:border-emerald-500 transition-all">
+                                <input type="number" id="ramadan-day" min="1" max="30" value="1" class="w-full bg-transparent outline-none px-3 py-2 text-2xl font-bold text-center text-white number-font">
+                            </div>
+                        </div>
+                        <div class="w-full md:w-1/2 flex justify-center md:justify-end">
+                            <div class="circular-progress shadow-lg transform md:scale-90" id="progress-bar">
+                                <span class="progress-value number-font" id="progress-text">0%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form id="khatma-form" class="mb-6 drop-shadow-md relative z-10 shrink-0 text-center md:text-start">
+                        <label class="block text-sm font-semibold tracking-wide text-slate-300 mb-2" data-i18n="pagesReadTotal">Total pages read so far:</label>
+                        <div class="flex max-w-xs mx-auto md:mx-0">
+                            <input type="number" id="pages-input" min="0" max="604" placeholder="e.g. 50" class="flex-grow bg-slate-900 border border-slate-700 border-e-0 rounded-s-xl px-4 py-3 focus:outline-none focus:ring-1 focus:ring-amber-500 text-white placeholder-slate-600 transition-all text-lg font-bold text-center outline-none number-font">
+                            <button type="submit" class="bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 transition-all text-slate-900 font-bold px-6 py-3 rounded-e-xl shadow-inner text-base uppercase tracking-wider">
+                                <span data-i18n="updateBtn">Update</span>
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Bottom Info Box -->
+                    <div class="bg-slate-900 bg-opacity-90 p-5 md:p-6 rounded-2xl border border-slate-700/50 mt-auto shadow-inner relative overflow-hidden shrink-0">
+                        <div class="absolute top-0 end-0 p-3 opacity-5 pointer-events-none text-8xl transform -translate-y-2"><i class="fa-solid fa-quran"></i></div>
+                        
+                        <div class="flex justify-between items-end mb-4 border-b border-white/10 pb-4">
+                            <span class="text-slate-400 text-xs md:text-sm font-semibold uppercase tracking-widest flex items-center gap-2" data-i18n="totalRead"><i class="fa-solid fa-book text-emerald-500/50 hidden md:inline"></i> Total Read</span>
+                            <span class="font-bold text-2xl text-emerald-400 tracking-tight" id="total-read">0 <span class="text-slate-500 text-lg font-light mx-1 number-font">/</span> <span class="text-slate-500 text-xl font-light number-font">604</span></span>
+                        </div>
+                        
+                        <div class="flex justify-between items-end mb-5">
+                            <span class="text-slate-400 text-xs md:text-sm font-semibold uppercase tracking-widest flex items-center gap-2" data-i18n="remaining"><i class="fa-solid fa-hourglass-half text-amber-500/50 hidden md:inline"></i> Remaining</span>
+                            <span class="font-bold text-2xl text-amber-400 number-font" id="remaining-pages">604</span>
+                        </div>
+                        
+                        <div class="bg-slate-800/80 rounded-xl p-4 border-s-4 border-emerald-500 text-center md:text-start shadow-md relative overflow-hidden">
+                            <div class="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-transparent pointer-events-none"></div>
+                            <p class="text-sm leading-relaxed text-slate-200 relative z-10" id="coach-message">
+                                <!-- dynamic message -->
+                            </p>
+                        </div>
+                        
+                        <button id="reset-khatma" class="mt-4 text-xs text-red-400/60 hover:text-red-400 underline decoration-red-400/30 transition-colors block w-full text-center py-2 uppercase tracking-widest font-semibold group">
+                            <i class="fa-solid fa-rotate-right me-2 group-hover:-rotate-90 transition-transform duration-300"></i><span data-i18n="resetProgress">Reset Progress</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <script>
+        // ==========================================
+        // UI Navigation Logic
+        // ==========================================
+        function switchTab(sectionId) {
+            // Hide all
+            document.querySelectorAll('.dashboard-section').forEach(el => {
+                el.classList.add('hidden');
+            });
+            // Show target
+            document.getElementById(sectionId).classList.remove('hidden');
+
+            // Update Nav buttons
+            document.querySelectorAll('.nav-item').forEach(el => {
+                // reset styling
+                el.classList.remove('bg-emerald-600', 'text-white', 'shadow-[0_8px_16px_rgba(16,185,129,0.3)]');
+                el.classList.add('hover:bg-slate-800/80', 'text-slate-400', 'hover:text-white');
+            });
+            
+            // Set active
+            const activeBtn = document.getElementById('nav-' + sectionId);
+            activeBtn.classList.remove('hover:bg-slate-800/80', 'text-slate-400', 'hover:text-white');
+            activeBtn.classList.add('bg-emerald-600', 'text-white', 'shadow-[0_8px_16px_rgba(16,185,129,0.3)]');
+        }
+
+        // ==========================================
+        // i18n Logic (Localization)
+        // ==========================================
+        const translations = {
+            en: {
+                title: "Ramadan",
+                subtitle: "Your daily companion",
+                navTracker: "Iftar Tracker",
+                navGoals: "Daily Goals",
+                navKhatma: "5atma Coach",
+                cityText: "Tunis, Tunisia",
+                todaysMaghrib: "Today's Maghrib",
+                timeUntilIftar: "Time until Iftar",
+                addGoodDeed: "Add a good deed...",
+                ramadanDay: "Ramadan Day",
+                pagesReadToday: "Pages read today:",
+                pagesReadTotal: "Total pages read so far:",
+                updateBtn: "Update",
+                logBtn: "Log",
+                dailyReadingLog: "Daily Reading Log",
+                dayLabel: "Day",
+                totalRead: "Total Read",
+                remaining: "Remaining",
+                resetProgress: "Reset Progress",
+                nothingPlanned: "Nothing planned yet. Enter a task above!",
+                iftarTime: "Iftar Time! 🌙",
+                unavailable: "Unavailable",
+                langSwitch: "عربي",
+                langSwitchMobile: "AR",
+                
+                // Dynamic texts
+                coachDone: "Masha'Allah! You completed your 5atma. May it be accepted!",
+                coachLeft: "You have {days} day(s) left.",
+                coachHard: "You need to read {pages} pages/day. Keep pushing hard!",
+                coachMed: "Read {pages} pages/day to finish on time.",
+                coachGood: "You are pacing perfectly! Just {pages} pages/day to finish."
+            },
+            ar: {
+                title: "لوحة تحكم رمضان",
+                subtitle: "رفيقك اليومي",
+                navTracker: "متتبع الإفطار",
+                navGoals: "الأهداف اليومية",
+                navKhatma: "مدرب الختمة",
+                cityText: "تونس، تونس",
+                todaysMaghrib: "مغرب اليوم",
+                timeUntilIftar: "الوقت حتى الإفطار",
+                addGoodDeed: "أضف عملاً صالحاً...",
+                ramadanDay: "يوم رمضان",
+                pagesReadToday: "الصفحات المقروءة اليوم:",
+                pagesReadTotal: "إجمالي الصفحات المقروءة:",
+                updateBtn: "تحديث",
+                logBtn: "سجل",
+                dailyReadingLog: "سجل القراءة اليومي",
+                dayLabel: "اليوم",
+                totalRead: "إجمالي القراءة",
+                remaining: "المتبقي",
+                resetProgress: "إعادة تعيين",
+                nothingPlanned: "لا توجد خطط بعد. أدخل مهمة أعلاه!",
+                iftarTime: "وقت الإفطار! 🌙",
+                unavailable: "غير متاح",
+                langSwitch: "English",
+                langSwitchMobile: "EN",
+
+                // Dynamic texts
+                coachDone: "ما شاء الله! لقد أكملت ختمتك. تقبل الله طاعتك!",
+                coachLeft: "تبقى لك {days} يوم.",
+                coachHard: "عليك قراءة {pages} صفحة/يوم. استمر بقوة!",
+                coachMed: "اقرأ {pages} صفحة/يوم لتنهي في الوقت المحدد.",
+                coachGood: "أنت تسير بخطى ممتازة! فقط {pages} صفحة/يوم لتنهي."
+            }
+        };
+
+        let currentLang = localStorage.getItem('ramadanLang') || 'en';
+
+        function applyLanguage(lang) {
+            currentLang = lang;
+            document.documentElement.lang = lang;
+            document.documentElement.dir = (lang === 'ar') ? 'rtl' : 'ltr';
+            
+            // Text Replacements
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang][key]) {
+                    // Save icon if exists inside element
+                    const icon = el.querySelector('i');
+                    el.innerHTML = translations[lang][key];
+                    if (icon) { el.prepend(icon); } 
+                }
+            });
+
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                if (translations[lang][key]) {
+                    el.placeholder = translations[lang][key];
+                }
+            });
+
+            // Switches labels
+            document.getElementById('lang-switch-text').innerText = translations[lang].langSwitch;
+            document.getElementById('lang-switch-text-mobile').innerText = translations[lang].langSwitchMobile;
+            
+            // Re-render Dynamic logic
+            renderTasks();
+            updateKhatmaInterface();
+            
+            // Trigger Animation
+            const mainContent = document.getElementById('main-container');
+            if (mainContent) {
+                mainContent.classList.remove('lang-transition');
+                void mainContent.offsetWidth; // force browser reflow
+                mainContent.classList.add('lang-transition');
+            }
+        }
+
+        function toggleLanguage() {
+            const newLang = currentLang === 'en' ? 'ar' : 'en';
+            localStorage.setItem('ramadanLang', newLang);
+            applyLanguage(newLang);
+        }
+
+        // ==========================================
+        // 1. Maghrib/Iftar Tracker Logic
+        // ==========================================
+        const maghribTimeEl = document.getElementById('maghrib-time');
+        const countdownTimerEl = document.getElementById('countdown-timer');
+        let maghribDateObj = null;
+
+        async function fetchPrayerTimes() {
+            try {
+                const API_URL = 'https://api.aladhan.com/v1/timingsByCity?city=Tunis&country=Tunisia&method=3';
+                const response = await fetch(API_URL);
+                const result = await response.json();
+                
+                if (result.code !== 200) throw new Error("API Error");
+
+                const maghribTimeStr = result.data.timings.Maghrib; 
+                
+                const [hours, minutes] = maghribTimeStr.split(':');
+                let h = parseInt(hours, 10);
+                const ampm = h >= 12 ? 'PM' : 'AM';
+                h = h % 12 || 12;
+                maghribTimeEl.innerText = `${h}:${minutes} ${ampm}`;
+
+                const now = new Date();
+                maghribDateObj = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(hours, 10), parseInt(minutes, 10), 0);
+                
+                if (now > maghribDateObj) {
+                   maghribDateObj.setDate(maghribDateObj.getDate() + 1);
+                }
+
+                startCountdown();
+            } catch (error) {
+                console.error("Failed to fetch prayer times:", error);
+                maghribTimeEl.innerText = "--:--";
+                countdownTimerEl.innerText = translations[currentLang].unavailable;
+            }
+        }
+
+        function startCountdown() {
+            setInterval(() => {
+                if (!maghribDateObj) return;
+                const now = new Date();
+                const diffTime = maghribDateObj - now;
+
+                if (diffTime <= 0) {
+                    countdownTimerEl.innerText = translations[currentLang].iftarTime;
+                    countdownTimerEl.classList.add('text-emerald-400');
+                    return;
+                }
+
+                const h = Math.floor((diffTime / (1000 * 60 * 60)) % 24);
+                const m = Math.floor((diffTime / 1000 / 60) % 60);
+                const s = Math.floor((diffTime / 1000) % 60);
+
+                countdownTimerEl.innerText = 
+                    `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        // ==========================================
+        // 2. Ramadan To-Do List Logic
+        // ==========================================
+        const todoForm = document.getElementById('todo-form');
+        const todoInput = document.getElementById('todo-input');
+        const todoList = document.getElementById('todo-list');
+
+        let tasks = JSON.parse(localStorage.getItem('ramadanTodoList2')) || [
+            { id: 1, text: "Pray Taraweeh - صلاة التراويح", completed: false },
+            { id: 2, text: "Give Sadaqah - إخراج الصدقة", completed: false }
+        ];
+
+        function saveTasks() {
+            localStorage.setItem('ramadanTodoList2', JSON.stringify(tasks));
+        }
+
+        function renderTasks() {
+            todoList.innerHTML = '';
+            
+            if (tasks.length === 0) {
+                todoList.innerHTML = `<p class="text-center text-slate-500 mt-6 text-sm italic">${translations[currentLang].nothingPlanned}</p>`;
+                return;
+            }
+
+            tasks.forEach(task => {
+                const li = document.createElement('li');
+                li.className = `task-item bg-slate-900 rounded-xl p-4 flex justify-between items-center border border-slate-700/60 shadow-sm ${task.completed ? 'task-completed bg-slate-800/50' : ''}`;
+                
+                li.innerHTML = `
+                    <div class="flex items-center gap-3 w-full overflow-hidden">
+                        <div class="flex-shrink-0 relative flex items-center justify-center">
+                            <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask(${task.id})" 
+                                class="peer appearance-none w-6 h-6 border-2 border-slate-600 rounded-md checked:bg-emerald-500 checked:border-0 cursor-pointer transition-all">
+                            <i class="fa-solid fa-check absolute text-white text-xs opacity-0 peer-checked:opacity-100 pointer-events-none"></i>
+                        </div>
+                        <span class="truncate block w-full select-none cursor-pointer font-medium text-slate-200 text-base" onclick="toggleTask(${task.id})">${task.text}</span>
+                    </div>
+                    <button onclick="deleteTask(${task.id})" class="text-slate-500 hover:text-white hover:bg-red-500/80 w-8 h-8 flex items-center justify-center rounded-md transition-colors shrink-0 ms-2 group shadow-inner">
+                        <i class="fa-solid fa-trash group-hover:scale-110 transition-transform"></i>
+                    </button>
+                `;
+                todoList.appendChild(li);
+            });
+        }
+
+        window.toggleTask = function(id) {
+            tasks = tasks.map(task => task.id === id ? { ...task, completed: !task.completed } : task);
+            saveTasks();
+            renderTasks();
+        }
+
+        window.deleteTask = function(id) {
+            tasks = tasks.filter(task => task.id !== id);
+            saveTasks();
+            renderTasks();
+        }
+
+        todoForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const text = todoInput.value.trim();
+            if (text) {
+                tasks.push({ id: Date.now(), text, completed: false });
+                todoInput.value = '';
+                saveTasks();
+                renderTasks();
+            }
+        });
+
+        // ==========================================
+        // 3. 5atma Coach Logic (Refactored for Simple Total Input)
+        // ==========================================
+        const TOTAL_PAGES_QURAN = 604;
+        const RAMADAN_DURATION = 30;
+        
+        const khatmaForm = document.getElementById('khatma-form');
+        const pagesInput = document.getElementById('pages-input');
+        const ramadanDayInput = document.getElementById('ramadan-day');
+        
+        const totalReadEl = document.getElementById('total-read');
+        const remainingPagesEl = document.getElementById('remaining-pages');
+        const coachMessageEl = document.getElementById('coach-message');
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.getElementById('progress-text');
+        const resetKhatmaBtn = document.getElementById('reset-khatma');
+
+        let totalPagesRead = parseInt(localStorage.getItem('ramadanKhatmaTotalNew')) || 0;
+        let currentDayInRamadan = parseInt(localStorage.getItem('ramadanCurrentDay')) || 1;
+
+        // Set initial values
+        ramadanDayInput.value = currentDayInRamadan;
+        if (totalPagesRead > 0) pagesInput.placeholder = totalPagesRead.toString();
+
+        function saveKhatmaData() {
+            localStorage.setItem('ramadanKhatmaTotalNew', totalPagesRead);
+            localStorage.setItem('ramadanCurrentDay', currentDayInRamadan);
+        }
+
+        function updateKhatmaInterface() {
+            const remainingPages = Math.max(0, TOTAL_PAGES_QURAN - totalPagesRead);
+            const daysLeft = Math.max(1, RAMADAN_DURATION - currentDayInRamadan + 1);
+            
+            const progressPercentage = Math.min(100, Math.round((totalPagesRead / TOTAL_PAGES_QURAN) * 100));
+            
+            totalReadEl.innerHTML = `<span class="number-font">${totalPagesRead}</span> <span class="text-slate-500 text-sm font-light mx-1">/</span> <span class="text-slate-500 text-lg font-light number-font">604</span>`;
+            remainingPagesEl.innerText = remainingPages;
+            progressText.innerText = `${progressPercentage}%`;
+            
+            progressBar.style.background = `conic-gradient(#10b981 ${progressPercentage * 3.6}deg, #1e293b 0deg)`;
+
+            const t = translations[currentLang];
+            let message = '';
+            if (remainingPages === 0) {
+                message = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-star text-amber-400 me-2"></i></span> ${t.coachDone}`;
+            } else {
+                const targetPagesPerDay = Math.ceil(remainingPages / daysLeft);
+                
+                const leftMsg = t.coachLeft.replace('{days}', `<span class="text-white font-bold number-font">${daysLeft}</span>`);
+                let paceMsg = '';
+                
+                if (targetPagesPerDay > 30) {
+                    paceMsg = t.coachHard.replace('{pages}', `<span class="text-red-400 font-bold text-base mx-1 number-font">${targetPagesPerDay}</span>`);
+                } else if (targetPagesPerDay > 20) {
+                    paceMsg = t.coachMed.replace('{pages}', `<span class="text-amber-400 font-bold text-base mx-1 number-font">${targetPagesPerDay}</span>`);
+                } else {
+                    paceMsg = t.coachGood.replace('{pages}', `<span class="text-emerald-400 font-bold text-base mx-1 number-font">${targetPagesPerDay}</span>`);
+                }
+                message = `<span class="block mb-1">${leftMsg}</span> <span>${paceMsg}</span>`;
+            }
+            coachMessageEl.innerHTML = message;
+        }
+
+        khatmaForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const inputVal = parseInt(pagesInput.value, 10);
+            
+            if (!isNaN(inputVal) && inputVal >= 0 && inputVal <= TOTAL_PAGES_QURAN) {
+                totalPagesRead = inputVal;
+                pagesInput.value = '';
+                pagesInput.placeholder = totalPagesRead; // keep placeholder updated
+                saveKhatmaData();
+                updateKhatmaInterface();
+            } else if (inputVal > TOTAL_PAGES_QURAN) {
+                alert("The total number of pages in the Quran is 604.");
+            }
+        });
+
+        ramadanDayInput.addEventListener('change', (e) => {
+            let dayNum = parseInt(e.target.value, 10);
+            if (isNaN(dayNum) || dayNum < 1) dayNum = 1;
+            if (dayNum > 30) dayNum = 30;
+            e.target.value = dayNum;
+            
+            currentDayInRamadan = dayNum;
+            saveKhatmaData();
+            updateKhatmaInterface();
+        });
+
+        resetKhatmaBtn.addEventListener('click', () => {
+            if(confirm('Warning: This will reset your 5atma progress to 0. Are you sure?')) {
+                totalPagesRead = 0;
+                pagesInput.placeholder = "e.g. 50";
+                saveKhatmaData();
+                updateKhatmaInterface();
+            }
+        });
+
+        // Initialization
+        applyLanguage(currentLang);
+        fetchPrayerTimes();
+        
+        // Initial setup for Khatma
+        updateKhatmaInterface();
+
+    </script>
+</body>
+</html>
